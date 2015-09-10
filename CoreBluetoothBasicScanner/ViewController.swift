@@ -231,7 +231,6 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         if let foo = characteristic.value {
             myData = characteristic.value
         }
-        if characteristic.isNotifying
         
 
         println("MyData: \(myData)\r")
