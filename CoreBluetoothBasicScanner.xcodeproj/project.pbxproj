@@ -339,6 +339,7 @@
 				INFOPLIST_FILE = CoreBluetoothBasicScanner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
@@ -349,6 +350,7 @@
 				INFOPLIST_FILE = CoreBluetoothBasicScanner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
 		};
@@ -405,6 +407,7 @@
 				6CBFBF1C1AAA036E000332B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		6CBFBF1D1AAA036E000332B0 /* Build configuration list for PBXNativeTarget "CoreBluetoothBasicScannerTests" */ = {
 			isa = XCConfigurationList;
@@ -413,6 +416,7 @@
 				6CBFBF1F1AAA036E000332B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

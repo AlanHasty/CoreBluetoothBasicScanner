@@ -22,7 +22,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
 
     // BLE Stuff
-    let myCentralManager = CBCentralManager()
+    var myCentralManager = CBCentralManager()
     var peripheralArray = [CBPeripheral]() // create now empty array.
     
 
@@ -174,12 +174,16 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
        updateStatusLabel("\r\r Discovered Servies for \(peripheral.name) \r\r")
         printToMyTextView("\r\r Discovered Servies for \(peripheral.name) \r\r")
         
-        for service in peripheral.services as [CBService]{
+        for service in peripheral.services as! [CBService]{
             println("Service: \(service)  Service.UUID \(service.UUID)  Service.UUID.UUIDString \(service.UUID.UUIDString) \r\r"  )
             printToMyTextView("\r Services: \(service.UUID.UUIDString) ")
             
             if service.UUID.UUIDString == "180F"{
                 printToMyTextView("------ FOUND BATT with service.UUID.UUIDString \r\r")
+                peripheral.discoverCharacteristics(nil, forService: service)
+            }
+            if service.UUID.UUIDString == "1816"{
+                printToMyTextView("------ FOUND Cadence service.UUID.UUIDString \r\r")
                 peripheral.discoverCharacteristics(nil, forService: service)
             }
         }
@@ -191,7 +195,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         println("didDiscoverCharacteristicsForService")
         printToMyTextView("DidDiscoverCharacteristicsForService:  Service.UUID \(service.UUID)  Service.UUID.UUIDString \(service.UUID.UUIDString) \r\r"  )
         
-        for characteristic in service.characteristics as [CBCharacteristic]{
+        for characteristic in service.characteristics as! [CBCharacteristic]{
             println("Reading Characteristic: \(characteristic)\r")
             printToMyTextView("Reading Characteristic Value: \(characteristic.value)\r")
             
@@ -214,8 +218,9 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     
     func peripheral(peripheral: CBPeripheral!, didUpdateValueForCharacteristic characteristic: CBCharacteristic!, error: NSError!) {
         
-        let convertedReading = "\u{2B}"
-        println("converted reading:\(convertedReading)")
+        //let convertedReading = "\u{2B}"
+        //println("converted reading:\(convertedReading)")
+       
         println("2  Reading Characteristic: \(characteristic)\r")
 
         printToMyTextView("2  Reading Characteristic Value: \(characteristic.value)\r")
@@ -223,7 +228,12 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
         
         var myData = NSData()
-        myData = characteristic.value
+        if let foo = characteristic.value {
+            myData = characteristic.value
+        }
+        if characteristic.isNotifying
+        
+
         println("MyData: \(myData)\r")
         printToMyTextView("MyData: \(myData)\r")
 
