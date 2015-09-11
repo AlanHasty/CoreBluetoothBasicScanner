@@ -22,7 +22,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
 
     // BLE Stuff
-    let myCentralManager = CBCentralManager()
+    var myCentralManager = CBCentralManager()
     var peripheralArray = [CBPeripheral]() // create now empty array.
     
 
@@ -114,17 +114,11 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 //        if RSSI.intValue > -100 ||
         if   peripheral?.name != nil {  // Look for your device by Name
             
-//            printToMyTextView("Description: \(peripheral.identifier.UUIDString)")
+            printToMyTextView("Description: \(peripheral.identifier.UUIDString)")
             printToMyTextView("Services: \(advertisementData)")
             printToMyTextView("RSSI: \(RSSI)")
             printToMyTextView("Name: \(peripheral.name)")
-            
-            println("Name: \(peripheral.name)")
-            println("Services: \(advertisementData)")
-            println("RSSI: \(RSSI)")
-            
             printToMyTextView("\r")
-            println("\r")
             
         }
 
@@ -171,15 +165,20 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 // Mark   CBPeriperhalManager
 
     func peripheral(peripheral: CBPeripheral!, didDiscoverServices error: NSError!) {
-       updateStatusLabel("\r\r Discovered Servies for \(peripheral.name) \r\r")
-        printToMyTextView("\r\r Discovered Servies for \(peripheral.name) \r\r")
+       updateStatusLabel("\r\r Discovered Services for \(peripheral.name) \r\r")
+        printToMyTextView("\r\r Discovered Services for \(peripheral.name) \r\r")
         
-        for service in peripheral.services as [CBService]{
-            println("Service: \(service)  Service.UUID \(service.UUID)  Service.UUID.UUIDString \(service.UUID.UUIDString) \r\r"  )
-            printToMyTextView("\r Services: \(service.UUID.UUIDString) ")
+        for service in peripheral.services as! [CBService]{
+            printToMyTextView("Service.UUID \(service.UUID) Service.UUID.UUIDString \(service.UUID.UUIDString)"  )
+            
             
             if service.UUID.UUIDString == "180F"{
-                printToMyTextView("------ FOUND BATT with service.UUID.UUIDString \r\r")
+                printToMyTextView("------ FOUND BATT service. r")
+                peripheral.discoverCharacteristics(nil, forService: service)
+            }
+            
+            if service.UUID.UUIDString == "1816" {
+                printToMyTextView("____ Found Cycling Speed and Cadence\r")
                 peripheral.discoverCharacteristics(nil, forService: service)
             }
         }
@@ -191,21 +190,21 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         println("didDiscoverCharacteristicsForService")
         printToMyTextView("DidDiscoverCharacteristicsForService:  Service.UUID \(service.UUID)  Service.UUID.UUIDString \(service.UUID.UUIDString) \r\r"  )
         
-        for characteristic in service.characteristics as [CBCharacteristic]{
+        for characteristic in service.characteristics as! [CBCharacteristic]{
             println("Reading Characteristic: \(characteristic)\r")
             printToMyTextView("Reading Characteristic Value: \(characteristic.value)\r")
             
             peripheral.readValueForCharacteristic(characteristic)
-            peripheral.readRSSI()
+            //peripheral.readRSSI()
         }
     }
   
     
     
     func peripheral(peripheral: CBPeripheral!, didReadRSSI RSSI: NSNumber!, error: NSError!) {
-    
+        
         println("readRSSI")
-            }
+    }
 
     func peripheralDidUpdateRSSI(peripheral: CBPeripheral!, error: NSError!) {
         println("didUpdateRSSI")
@@ -214,20 +213,19 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     
     func peripheral(peripheral: CBPeripheral!, didUpdateValueForCharacteristic characteristic: CBCharacteristic!, error: NSError!) {
         
-        let convertedReading = "\u{2B}"
-        println("converted reading:\(convertedReading)")
+        //let convertedReading = "\u{2B}"
+        //println("converted reading:\(convertedReading)")
         println("2  Reading Characteristic: \(characteristic)\r")
 
-        printToMyTextView("2  Reading Characteristic Value: \(characteristic.value)\r")
-        println("2  Reading Characteristic Property: \(characteristic.properties)\r")
+        printToMyTextView("2  Read Char Value: \(characteristic.value)\r")
+        printToMyTextView("2  Read Char Property: \(characteristic.properties)\r")
 
         
         var myData = NSData()
-        myData = characteristic.value
-        println("MyData: \(myData)\r")
-        printToMyTextView("MyData: \(myData)\r")
-
-
+        if let foo = characteristic.value {
+            myData = characteristic.value
+            printToMyTextView("MyData: \(myData)")
+        }
     }
     
     
@@ -253,6 +251,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     
     
     func printToMyTextView(passedString: String){
+        println("\(passedString)\r")
         myTextView.text = passedString + "\r" + myTextView.text
     }
 
