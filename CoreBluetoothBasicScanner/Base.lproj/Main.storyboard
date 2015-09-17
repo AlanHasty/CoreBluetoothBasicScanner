@@ -54,7 +54,7 @@
                                 </connections>
                             </switch>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" text="Welcome." translatesAutoresizingMaskIntoConstraints="NO" id="cvI-KD-WWn">
-                                <rect key="frame" x="15" y="0.0" width="726" height="920"/>
+                                <rect key="frame" x="15" y="0.0" width="693" height="864"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>

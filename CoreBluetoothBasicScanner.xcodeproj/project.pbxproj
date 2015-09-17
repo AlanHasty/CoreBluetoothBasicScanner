@@ -13,6 +13,7 @@
 		6CBFBF081AAA036E000332B0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6CBFBF071AAA036E000332B0 /* Images.xcassets */; };
 		6CBFBF0B1AAA036E000332B0 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6CBFBF091AAA036E000332B0 /* LaunchScreen.xib */; };
 		6CBFBF171AAA036E000332B0 /* CoreBluetoothBasicScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CBFBF161AAA036E000332B0 /* CoreBluetoothBasicScannerTests.swift */; };
+		E70D8AFC1BA8374400E18FCE /* SpeedAndCadence.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70D8AFB1BA8374400E18FCE /* SpeedAndCadence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +37,7 @@
 		6CBFBF101AAA036E000332B0 /* CoreBluetoothBasicScannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreBluetoothBasicScannerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6CBFBF151AAA036E000332B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6CBFBF161AAA036E000332B0 /* CoreBluetoothBasicScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreBluetoothBasicScannerTests.swift; sourceTree = "<group>"; };
+		E70D8AFB1BA8374400E18FCE /* SpeedAndCadence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeedAndCadence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 		6CBFBEFD1AAA036E000332B0 /* CoreBluetoothBasicScanner */ = {
 			isa = PBXGroup;
 			children = (
+				E70D8AFB1BA8374400E18FCE /* SpeedAndCadence.swift */,
 				6CBFBF001AAA036E000332B0 /* AppDelegate.swift */,
 				6CBFBF021AAA036E000332B0 /* ViewController.swift */,
 				6CBFBF041AAA036E000332B0 /* Main.storyboard */,
@@ -214,6 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6CBFBF031AAA036E000332B0 /* ViewController.swift in Sources */,
+				E70D8AFC1BA8374400E18FCE /* SpeedAndCadence.swift in Sources */,
 				6CBFBF011AAA036E000332B0 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -171,31 +171,42 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         for service in peripheral.services as! [CBService]{
             printToMyTextView("Service.UUID \(service.UUID) Service.UUID.UUIDString \(service.UUID.UUIDString)"  )
             
-            
-            if service.UUID.UUIDString == "180F"{
-                printToMyTextView("------ FOUND BATT service. r")
+            if CSCTag.validService(service) {
+                // Discover characteristics of all valid services
                 peripheral.discoverCharacteristics(nil, forService: service)
             }
+
             
-            if service.UUID.UUIDString == "1816" {
-                printToMyTextView("____ Found Cycling Speed and Cadence\r")
-                peripheral.discoverCharacteristics(nil, forService: service)
-            }
+//            if service.UUID.UUIDString == "180F"{
+//                printToMyTextView("------ FOUND BATT service.")
+//                peripheral.discoverCharacteristics(nil, forService: service)
+//            }
+//            
+//            if service.UUID.UUIDString == "1816" {
+//                printToMyTextView("____ Found Cycling Speed and Cadence\r")
+//                peripheral.discoverCharacteristics(nil, forService: service)
+//            }
         }
     }
     
   
     
     func peripheral(peripheral: CBPeripheral!, didDiscoverCharacteristicsForService service: CBService!, error: NSError!) {
-        println("didDiscoverCharacteristicsForService")
-        printToMyTextView("DidDiscoverCharacteristicsForService:  Service.UUID \(service.UUID)  Service.UUID.UUIDString \(service.UUID.UUIDString) \r\r"  )
+        
+        var enableValue = 1
+        let enablyBytes = NSData(bytes: &enableValue, length: sizeof(UInt8))
+        
+        printToMyTextView("DidDiscoverCharacteristicsForService:  Service.UUID \(service.UUID)  UUIDString \(service.UUID.UUIDString)\r")
+        printToMyTextView("Enabling sensors")
         
         for characteristic in service.characteristics as! [CBCharacteristic]{
-            println("Reading Characteristic: \(characteristic)\r")
-            printToMyTextView("Reading Characteristic Value: \(characteristic.value)\r")
             
-            peripheral.readValueForCharacteristic(characteristic)
-            //peripheral.readRSSI()
+            //peripheral.readValueForCharacteristic(characteristic)
+            printToMyTextView("\(characteristic)")
+            if CSCTag.validDataCharacteristic(characteristic)
+            {
+               peripheral.setNotifyValue(true, forCharacteristic: characteristic)
+            }
         }
     }
   
@@ -215,16 +226,22 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         
         //let convertedReading = "\u{2B}"
         //println("converted reading:\(convertedReading)")
-        println("2  Reading Characteristic: \(characteristic)\r")
-
-        printToMyTextView("2  Read Char Value: \(characteristic.value)\r")
-        printToMyTextView("2  Read Char Property: \(characteristic.properties)\r")
-
+        printToMyTextView("  Read Char Property:Value: \(characteristic.properties):\(characteristic.value)\r")
         
         var myData = NSData()
         if let foo = characteristic.value {
             myData = characteristic.value
             printToMyTextView("MyData: \(myData)")
+        }
+        
+        //     return [WheelRev, WheelEvt, CrankRev, CrankEvt]
+        
+        
+        if characteristic.UUID == CSCMeasurementDataUUID
+        {
+            var wheelData : [Double] = CSCTag.getCSCData(characteristic.value)
+            printToMyTextView("Wheel Event ms \(wheelData[1]) : Crank Event ms\(wheelData[3])")
+            printToMyTextView("Wheel Revs \(wheelData[0]) : Crank Revs\(wheelData[2])")
         }
     }
     
