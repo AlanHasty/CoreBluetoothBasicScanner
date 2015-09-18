@@ -234,11 +234,11 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
         printToMyTextView("  Read Char Property:Value: \(characteristic.properties):\(characteristic.value)\r")
         
-        var myData = NSData()
-        if let foo = characteristic.value {
-            myData = characteristic.value
-            printToMyTextView("MyData: \(myData)")
-        }
+//        var myData = NSData()
+//        if let foo = characteristic.value {
+//            myData = characteristic.value
+//            printToMyTextView("MyData: \(myData)")
+//        }
         
         //     return [WheelRev, WheelEvt, CrankRev, CrankEvt]
         
@@ -247,21 +247,66 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         {
             var wheelData : [Double] = CSCTag.getCSCData(characteristic.value)
             var crankRev = wheelData[2]
+            var crankEvt = wheelData[3]
             var wheelRev = wheelData[0]
+            var wheelEvt = wheelData[1]
             
-            printToMyTextView("Wheel Event \(wheelData[1]) ms : Crank Event \(wheelData[3]) ms")
-            printToMyTextView("Wheel Revs \(wheelRev) : Crank Revs\(crankRev)")
+            println("Wheel Event \(wheelEvt) ms : Crank Event \(crankEvt) ms")
+            println("Wheel Revs \(wheelRev) : Crank Revs \(crankRev)")
 
-            var wrevs = wheelRev - prevWheelRev
-            var crevs = crankRev - prevCrankRev
+            
+            if crankRev < prevCrankRev
+            {
+                crankRev += 65535
+            }
+            
+            if crankEvt < prevCrankEvt
+            {
+                crankEvt += 65535
+            }
+            let crankPeriod = crankEvt - prevCrankEvt
+            var crevs :Double
+            if crankPeriod > 0
+            {
+               crevs = (crankRev - prevCrankRev)/crankPeriod * 60000
+            }
+            else
+            {
+                crevs = 0
+            }
+            
+            if wheelEvt < prevWheelEvt
+            {
+                wheelEvt += 65535
+            }
+            
+            let wheelPeriod = wheelEvt - prevWheelEvt
+            var wrevs : Double
+            
+            if wheelPeriod > 0
+            {
+                wrevs = (wheelRev - prevWheelRev)/wheelPeriod * 60000
+            }
+            else
+            {
+                wrevs = 0
+            }
+            
+            // Wheel revs is already a 32 bit number - that is a lot of revs
+            
+            
+            
             if wrevs > 300 {wheelRevs.text = "Wooh"}
             else { wheelRevs.text = "\(wrevs)"}
 
             if crevs > 300 { crankRevs.text = "Woow"}
             else { crankRevs.text = "\(crevs)" }
+            println("Cadence: \(crevs) rpm \tWheel: \(wrevs) rpm")
             
             prevCrankRev = crankRev
             prevWheelRev = wheelRev
+            prevCrankEvt = crankEvt
+            prevWheelEvt = wheelEvt
             
         }
     }
