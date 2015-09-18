@@ -134,8 +134,9 @@ class CSCTag {
     // Get CSC data values
     class func getCSCData(value: NSData) -> [Double] {
         let dataFromSensor = dataToUnsignedBytes16(value)
-        var wheelR : Int32 = Int32(dataFromSensor[0] << 16)) | Int32(dataFromSensor[1])
-        let WheelRev = Double( wheelR)
+        var wheelR : UInt32
+        wheelR = UInt32(dataFromSensor[0]) << 16 | UInt32(dataFromSensor[1])
+        let WheelRev = Double(wheelR)
     
         let WheelEvt  = Double(dataFromSensor[2])
         let CrankRev  = Double(dataFromSensor[3])

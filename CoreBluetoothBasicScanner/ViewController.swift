@@ -19,6 +19,14 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     @IBOutlet weak var progressViewRSSI: UIProgressView!
     @IBOutlet weak var labelStatus: UILabel!
     @IBOutlet weak var myTextView: UITextView!
+    
+    @IBOutlet weak var wheelRevs: UILabel!
+    @IBOutlet weak var crankRevs: UILabel!
+    
+    var prevCrankEvt: Double = 0.0
+    var prevWheelEvt: Double = 0.0
+    var prevWheelRev: Double = 0.0
+    var prevCrankRev: Double = 0.0
 
 
     // BLE Stuff
@@ -223,9 +231,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     
     
     func peripheral(peripheral: CBPeripheral!, didUpdateValueForCharacteristic characteristic: CBCharacteristic!, error: NSError!) {
-        
-        //let convertedReading = "\u{2B}"
-        //println("converted reading:\(convertedReading)")
+
         printToMyTextView("  Read Char Property:Value: \(characteristic.properties):\(characteristic.value)\r")
         
         var myData = NSData()
@@ -240,8 +246,23 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         if characteristic.UUID == CSCMeasurementDataUUID
         {
             var wheelData : [Double] = CSCTag.getCSCData(characteristic.value)
-            printToMyTextView("Wheel Event ms \(wheelData[1]) : Crank Event ms\(wheelData[3])")
-            printToMyTextView("Wheel Revs \(wheelData[0]) : Crank Revs\(wheelData[2])")
+            var crankRev = wheelData[2]
+            var wheelRev = wheelData[0]
+            
+            printToMyTextView("Wheel Event \(wheelData[1]) ms : Crank Event \(wheelData[3]) ms")
+            printToMyTextView("Wheel Revs \(wheelRev) : Crank Revs\(crankRev)")
+
+            var wrevs = wheelRev - prevWheelRev
+            var crevs = crankRev - prevCrankRev
+            if wrevs > 300 {wheelRevs.text = "Wooh"}
+            else { wheelRevs.text = "\(wrevs)"}
+
+            if crevs > 300 { crankRevs.text = "Woow"}
+            else { crankRevs.text = "\(crevs)" }
+            
+            prevCrankRev = crankRev
+            prevWheelRev = wheelRev
+            
         }
     }
     
