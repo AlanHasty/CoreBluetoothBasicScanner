@@ -11,6 +11,7 @@
 
 import UIKit
 import CoreBluetooth
+import CoreFoundation 
 
 
 class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDelegate {
@@ -23,10 +24,10 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     @IBOutlet weak var wheelRevs: UILabel!
     @IBOutlet weak var crankRevs: UILabel!
     
-    var prevCrankEvt: Double = 0.0
-    var prevWheelEvt: Double = 0.0
-    var prevWheelRev: Double = 0.0
-    var prevCrankRev: Double = 0.0
+    var prevCrankEvt: UInt32 = 0
+    var prevWheelEvt: UInt32 = 0
+    var prevWheelRev: UInt32 = 0
+    var prevCrankRev: UInt32 = 0
 
 
     // BLE Stuff
@@ -245,27 +246,23 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         
         if characteristic.UUID == CSCMeasurementDataUUID
         {
-            var wheelData : [Double] = CSCTag.getCSCData(characteristic.value)
-            var crankRev = wheelData[2]
-            var crankEvt = wheelData[3]
-            var wheelRev = wheelData[0]
-            var wheelEvt = wheelData[1]
+            var wheelData : [UInt32] = CSCTag.getCSCData(characteristic.value)
+            //  return [ UInt32(dataPresent), wheelRev, UInt32(wheelEvt), UInt32(crankRev), UInt32(crankEvt)]
+            var flags    = wheelData[0]
+            var wheelRev = wheelData[1]
+            var wheelEvt = wheelData[2]
+            var crankRev = wheelData[3]
+            var crankEvt = wheelData[4]
             
             println("Wheel Event \(wheelEvt) ms : Crank Event \(crankEvt) ms")
             println("Wheel Revs \(wheelRev) : Crank Revs \(crankRev)")
-
-            
-            if crankRev < prevCrankRev
-            {
-                crankRev += 65535
-            }
             
             if crankEvt < prevCrankEvt
             {
                 crankEvt += 65535
             }
             let crankPeriod = crankEvt - prevCrankEvt
-            var crevs :Double
+            var crevs :UInt32
             if crankPeriod > 0
             {
                crevs = (crankRev - prevCrankRev)/crankPeriod * 60000
@@ -281,11 +278,11 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
             }
             
             let wheelPeriod = wheelEvt - prevWheelEvt
-            var wrevs : Double
+            var wrevs : UInt32 = 0
             
             if wheelPeriod > 0
             {
-                wrevs = (wheelRev - prevWheelRev)/wheelPeriod * 60000
+                wrevs = ((wheelRev - prevWheelRev) * 60000)/wheelPeriod
             }
             else
             {

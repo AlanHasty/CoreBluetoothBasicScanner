@@ -43,6 +43,7 @@ let BatteryLevelConfigUUID   = CBUUID(string: "00002902-0000-1000-8000-00805f9b3
 //let GyroscopeConfigUUID     = CBUUID(string: "F000AA52-0451-4000-B000-000000000000")
 
 
+
 class CSCTag {
     
     // Check name of device from advertisement data
@@ -57,31 +58,27 @@ class CSCTag {
         if service.UUID == BatteryServiceUUID || service.UUID == CyclingSpeedandCadenceServiceUUID {
                 return true
         }
-        else {
-            return false
-        }
+        return false
     }
     
     
     // Check if the characteristic has a valid data UUID
     class func validDataCharacteristic (characteristic : CBCharacteristic) -> Bool {
-        if characteristic.UUID == CSCMeasurementDataUUID || characteristic.UUID == BatteryLevelDataUUID {
-                return true
+        if characteristic.UUID == CSCMeasurementDataUUID ||
+           characteristic.UUID == BatteryLevelDataUUID {
+           return true
         }
-        else {
-            return false
-        }
+        return false
     }
     
     
     // Check if the characteristic has a valid config UUID
     class func validConfigCharacteristic (characteristic : CBCharacteristic) -> Bool {
-        if characteristic.UUID == CSCMeasurementConfigUUID || characteristic.UUID == BatteryLevelConfigUUID {
-                return true
+        if characteristic.UUID == CSCMeasurementConfigUUID ||
+           characteristic.UUID == BatteryLevelConfigUUID {
+           return true
         }
-        else {
-            return false
-        }
+        return false
     }
     
     
@@ -104,44 +101,78 @@ class CSCTag {
 //        return sensorLabels
 //    }
     
-    
-    
-    // Process the values from sensor
-    
-    
-    // Convert NSData to array of bytes
-    class func dataToSignedBytes16(value : NSData) -> [Int16] {
-        let count = value.length
-        var array = [Int16](count: count, repeatedValue: 0)
-        value.getBytes(&array, length:count * sizeof(Int16))
-        return array
-    }
-    
-    class func dataToUnsignedBytes16(value : NSData) -> [UInt16] {
-        let count = value.length
-        var array = [UInt16](count: count, repeatedValue: 0)
-        value.getBytes(&array, length:count * sizeof(UInt16))
-        return array
-    }
-    
     class func dataToSignedBytes8(value : NSData) -> [Int8] {
         let count = value.length
         var array = [Int8](count: count, repeatedValue: 0)
         value.getBytes(&array, length:count * sizeof(Int8))
         return array
     }
+
+    // The first byte is an indicator of what data is contained
+    // bit 0 - wheel revolutions info
+    // bit 1 - crank revolutions info
+    //https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.csc_measurement.xml
+    
+
+    
+    // Process the values from sensor
   
     // Get CSC data values
-    class func getCSCData(value: NSData) -> [Double] {
-        let dataFromSensor = dataToUnsignedBytes16(value)
-        var wheelR : UInt32
-        wheelR = UInt32(dataFromSensor[0]) << 16 | UInt32(dataFromSensor[1])
-        let WheelRev = Double(wheelR)
-    
-        let WheelEvt  = Double(dataFromSensor[2])
-        let CrankRev  = Double(dataFromSensor[3])
-        let CrankEvt  = Double(dataFromSensor[4])
-        return [WheelRev, WheelEvt, CrankRev, CrankEvt]
+    class func getCSCData(value: NSData) -> [UInt32] {
+        
+        // Definitions from BT spec on CSC profile
+        var cscWheelPresent: UInt8 = 0x01
+        let cscCrankPresent: UInt8 = 0x02
+        
+        let count = value.length
+        var dataFromSensor = [UInt8](count: count, repeatedValue: 0)
+        value.getBytes(&dataFromSensor, length:count * sizeof(Int8))
+
+        
+        let dataPresent: UInt8 = UInt8(dataFromSensor[0])
+        
+        let wheelDataPreset: Bool = dataPresent & cscWheelPresent != 0
+        let crankDataPreset: Bool = dataPresent & cscCrankPresent != 0
+        
+        var wheelRev : UInt32
+        var wheelEvt : UInt16
+        
+        if ( wheelDataPreset)
+        {
+            // gotToBeABetterWay = value.getBytes( &dataFromSensor[1], length:4)
+            var gotToBeABetterWay : UInt32 = UInt32( dataFromSensor[1]) << 24  |
+                                             UInt32( dataFromSensor[2]) << 16  |
+                                             UInt32( dataFromSensor[3]) << 8   |
+                                             UInt32( dataFromSensor[4])
+            wheelRev = CFSwapInt32LittleToHost(gotToBeABetterWay)
+            
+            var gotToBeABetterWayShort : UInt16 = UInt16( dataFromSensor[5]) << 8 | UInt16( dataFromSensor[6] )
+            wheelEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+        }
+        else
+        {
+            wheelRev = 0
+            wheelEvt = 0
+        }
+
+        var crankRev :UInt16
+        var crankEvt :UInt16
+        
+        if (crankDataPreset )
+        {
+            
+            var gotToBeABetterWayShort : UInt16 = UInt16( dataFromSensor[7]) << 8 | UInt16( dataFromSensor[8] )
+            crankRev = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+            gotToBeABetterWayShort = UInt16( dataFromSensor[9]) << 8 | UInt16( dataFromSensor[10] )
+            crankEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+        }
+        else
+        {
+            crankEvt = 0
+            crankRev = 0
+        }
+        
+        return [ UInt32(dataPresent), wheelRev, UInt32(wheelEvt), UInt32(crankRev), UInt32(crankEvt)]
     }
     
 
