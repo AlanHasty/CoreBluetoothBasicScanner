@@ -113,23 +113,101 @@ class CSCTag {
     // bit 1 - crank revolutions info
     //https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.csc_measurement.xml
     
-
-    
-    // Process the values from sensor
-  
-    // Get CSC data values
-    class func getCSCData(value: NSData) -> [UInt32] {
+    class func formatCSCCrankData(sensorData: [UInt8]) -> [UInt32]
+    {
+        // Definitions from BT spec on CSC profile
+        let cscCrankPresent: UInt8 = 0x02
         
+        let dataPresent: UInt8 = UInt8(sensorData[0])
+        let crankDataPreset: Bool = dataPresent & cscCrankPresent != 0
+        
+        var crankRev :UInt16
+        var crankEvt :UInt16
+        
+        if (crankDataPreset )
+        {
+            
+            var gotToBeABetterWayShort : UInt16 = UInt16( sensorData[8]) << 8 | UInt16( sensorData[7] )
+            crankRev = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+            
+            gotToBeABetterWayShort = UInt16( sensorData[10]) << 8 | UInt16( sensorData[9] )
+            crankEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+        }
+        else
+        {
+            crankEvt = 0
+            crankRev = 0
+        }
+        
+        return [ UInt32(crankRev), UInt32(crankEvt)]
+    }
+    
+    class func formatCSCPresenceData(sensorData: [UInt8]) -> [Bool]
+    {
         // Definitions from BT spec on CSC profile
         var cscWheelPresent: UInt8 = 0x01
         let cscCrankPresent: UInt8 = 0x02
         
+        let dataPresent: UInt8 = UInt8(sensorData[0])
+        
+        let wheelDataPreset: Bool = dataPresent & cscWheelPresent != 0
+        let crankDataPreset: Bool = dataPresent & cscCrankPresent != 0
+        
+        return [ wheelDataPreset, crankDataPreset]
+    }
+    
+    class func formatCSCWheelData(sensorData: [UInt8]) -> [UInt32]
+    {
+        // Definitions from BT spec on CSC profile
+        var cscWheelPresent: UInt8 = 0x01
+        let cscCrankPresent: UInt8 = 0x02
+        
+        let dataPresent: UInt8 = UInt8(sensorData[0])
+        
+        let wheelDataPreset: Bool = dataPresent & cscWheelPresent != 0
+        
+        var wheelRev : UInt32
+        var wheelEvt : UInt16
+        
+        if ( wheelDataPreset)
+        {
+            // gotToBeABetterWay = value.getBytes( &dataFromSensor[1], length:4)
+            var gotToBeABetterWay : UInt32 = UInt32( sensorData[4]) << 24  |
+                UInt32( sensorData[3]) << 16  |
+                UInt32( sensorData[2]) << 8   |
+                UInt32( sensorData[1])
+            //wheelRev = CFSwapInt32LittleToHost(gotToBeABetterWay)
+            wheelRev = gotToBeABetterWay
+            
+            var gotToBeABetterWayShort : UInt16 = UInt16( sensorData[6]) << 8 | UInt16( sensorData[5] )
+            wheelEvt = gotToBeABetterWayShort
+            //wheelEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
+        }
+        else
+        {
+            wheelRev = 0
+            wheelEvt = 0
+        }
+        return [ wheelRev, UInt32(wheelEvt)]
+    }
+    
+    // Process the values from sensor
+    class func retrieveCSCData(value: NSData) -> [UInt8]
+    {
         let count = value.length
         var dataFromSensor = [UInt8](count: count, repeatedValue: 0)
         value.getBytes(&dataFromSensor, length:count * sizeof(Int8))
-
         
-        let dataPresent: UInt8 = UInt8(dataFromSensor[0])
+        return dataFromSensor
+    }
+    
+    class func formatCSCData(sensorData: [UInt8]) -> [UInt32]
+    {
+        // Definitions from BT spec on CSC profile
+        var cscWheelPresent: UInt8 = 0x01
+        let cscCrankPresent: UInt8 = 0x02
+        
+        let dataPresent: UInt8 = UInt8(sensorData[0])
         
         let wheelDataPreset: Bool = dataPresent & cscWheelPresent != 0
         let crankDataPreset: Bool = dataPresent & cscCrankPresent != 0
@@ -140,13 +218,13 @@ class CSCTag {
         if ( wheelDataPreset)
         {
             // gotToBeABetterWay = value.getBytes( &dataFromSensor[1], length:4)
-            var gotToBeABetterWay : UInt32 = UInt32( dataFromSensor[1]) << 24  |
-                                             UInt32( dataFromSensor[2]) << 16  |
-                                             UInt32( dataFromSensor[3]) << 8   |
-                                             UInt32( dataFromSensor[4])
+            var gotToBeABetterWay : UInt32 = UInt32( sensorData[1]) << 24  |
+                UInt32( sensorData[2]) << 16  |
+                UInt32( sensorData[3]) << 8   |
+                UInt32( sensorData[4])
             wheelRev = CFSwapInt32LittleToHost(gotToBeABetterWay)
             
-            var gotToBeABetterWayShort : UInt16 = UInt16( dataFromSensor[5]) << 8 | UInt16( dataFromSensor[6] )
+            var gotToBeABetterWayShort : UInt16 = UInt16( sensorData[5]) << 8 | UInt16( sensorData[6] )
             wheelEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
         }
         else
@@ -154,16 +232,16 @@ class CSCTag {
             wheelRev = 0
             wheelEvt = 0
         }
-
+        
         var crankRev :UInt16
         var crankEvt :UInt16
         
         if (crankDataPreset )
         {
             
-            var gotToBeABetterWayShort : UInt16 = UInt16( dataFromSensor[7]) << 8 | UInt16( dataFromSensor[8] )
+            var gotToBeABetterWayShort : UInt16 = UInt16( sensorData[7]) << 8 | UInt16( sensorData[8] )
             crankRev = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
-            gotToBeABetterWayShort = UInt16( dataFromSensor[9]) << 8 | UInt16( dataFromSensor[10] )
+            gotToBeABetterWayShort = UInt16( sensorData[9]) << 8 | UInt16( sensorData[10] )
             crankEvt = CFSwapInt16LittleToHost(gotToBeABetterWayShort)
         }
         else
@@ -173,6 +251,36 @@ class CSCTag {
         }
         
         return [ UInt32(dataPresent), wheelRev, UInt32(wheelEvt), UInt32(crankRev), UInt32(crankEvt)]
+    }
+  
+    // Get CSC data values
+    class func getCSCData(value: NSData) -> [UInt32] {
+
+        var dataFromSensor: [UInt8] = retrieveCSCData(value)
+        let presenceData: [Bool] = formatCSCPresenceData(dataFromSensor)
+        
+        let wheelDataPreset: Bool = presenceData[0]
+        let crankDataPreset: Bool = presenceData[1]
+        
+        var wheelRev : UInt32 = 0
+        var wheelEvt : UInt32 = 0
+        
+        if wheelDataPreset {
+            let wheelData: [UInt32] = formatCSCWheelData(dataFromSensor)
+            wheelRev = wheelData[0]
+            wheelEvt = wheelData[1]
+        }
+        
+        var crankRev :UInt32 = 0
+        var crankEvt :UInt32 = 0
+
+        if crankDataPreset {
+            let crankData: [UInt32] = formatCSCCrankData(dataFromSensor)
+            crankRev = crankData[0]
+            crankEvt = crankData[1]
+        }
+        
+        return [wheelRev, wheelEvt, crankRev, crankEvt]
     }
     
 

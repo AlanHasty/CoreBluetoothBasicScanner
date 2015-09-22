@@ -8,8 +8,10 @@
 
 import UIKit
 import XCTest
+import CoreBluetoothBasicScanner
+//import SpeedAndCadence
 
-class CoreBluetoothBasicScannerTests: XCTestCase {
+class BasicScannerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
@@ -21,16 +23,32 @@ class CoreBluetoothBasicScannerTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+
+    
+    func testCSCDataExtraction() {
+        // Test to get the extraction of CSC data correct
+        var arr : [UInt8] = [3,0xf2,0x22, 0,0, 0xb0,0x73,0x5f,0x40,0xd4,0xd5]
+        var result : [Bool] = BLETag.formatCSCPresenceData(arr)
+        
+        XCTAssertEqual(result[0], true, " Wheel flag incorrect")
+        XCTAssertEqual(result[0], true, " Crank flag incorrect")
+
+    }
+
+    func testCSCCrankDataExtraction() {
+        var arr : [UInt8] = [3,0xf2,0x22, 0,0, 0xb0,0x73,0x5f,0x40,0xd4,0xd5]
+        
+        var result : [UInt32] = BLETag.formatCSCCrankData(arr)
+        XCTAssertEqual(result[0], 16479, "Crank Revs incorrect")
+        XCTAssertEqual(result[1], 54740, "Crank Event incorrect")
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock() {
-            // Put the code you want to measure the time of here.
-        }
+    func testCSCWheelDataExtraction() {
+        var arr : [UInt8] = [3,0xf2,0x22, 0,0, 0xb0,0x73,0x5f,0x40,0xd4,0xd5]
+        
+        var result : [UInt32] = BLETag.formatCSCWheelData(arr)
+        XCTAssertEqual(result[0], 8946, "Wheel Revs incorrect")
+        XCTAssertEqual(result[1], 29616, "Wheel Event incorrect")
     }
     
 }

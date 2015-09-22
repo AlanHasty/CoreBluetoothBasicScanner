@@ -247,12 +247,11 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         if characteristic.UUID == CSCMeasurementDataUUID
         {
             var wheelData : [UInt32] = CSCTag.getCSCData(characteristic.value)
-            //  return [ UInt32(dataPresent), wheelRev, UInt32(wheelEvt), UInt32(crankRev), UInt32(crankEvt)]
-            var flags    = wheelData[0]
-            var wheelRev = wheelData[1]
-            var wheelEvt = wheelData[2]
-            var crankRev = wheelData[3]
-            var crankEvt = wheelData[4]
+
+            var wheelRev = wheelData[0]
+            var wheelEvt = wheelData[1]
+            var crankRev = wheelData[2]
+            var crankEvt = wheelData[3]
             
             println("Wheel Event \(wheelEvt) ms : Crank Event \(crankEvt) ms")
             println("Wheel Revs \(wheelRev) : Crank Revs \(crankRev)")
@@ -263,14 +262,13 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
             }
             let crankPeriod = crankEvt - prevCrankEvt
             var crevs :UInt32
-            if crankPeriod > 0
-            {
-               crevs = (crankRev - prevCrankRev)/crankPeriod * 60000
+            if crankPeriod > 0 {
+               crevs = (crankRev - prevCrankRev) * 60000 / crankPeriod
             }
-            else
-            {
+            else {
                 crevs = 0
             }
+            
             
             if wheelEvt < prevWheelEvt
             {
@@ -288,11 +286,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
             {
                 wrevs = 0
             }
-            
-            // Wheel revs is already a 32 bit number - that is a lot of revs
-            
-            
-            
+
             if wrevs > 300 {wheelRevs.text = "Wooh"}
             else { wheelRevs.text = "\(wrevs)"}
 
